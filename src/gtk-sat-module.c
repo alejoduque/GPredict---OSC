@@ -1035,12 +1035,9 @@ gtk_sat_module_update_sat    (gpointer key, gpointer val, gpointer data)
 
     /* OSC Data */
 
-    Regex r = new Regex(@"\s+");
-    string s3 = r.Replace(nickname, @"");
-
     if (sat_cfg_get_bool(SAT_CFG_BOOL_SEND_OSC) == TRUE) {
 	lo_address t = lo_address_new(NULL, "7770");
-	if (lo_send(t, "/gpredict/sats", "sffff", sat->s3, sat->az, sat->el, sat->alt, sat->velo) == -1)
+	if (lo_send(t, "/gpredict/sats", "sffff", sat->nickname, sat->az, sat->el, sat->alt, sat->velo) == -1)
 		printf("OSC error %d: %s\n", lo_address_errno(t), lo_address_errstr(t));
 	lo_address_free (t);
     }
