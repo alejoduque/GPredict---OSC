@@ -1036,7 +1036,7 @@ gtk_sat_module_update_sat    (gpointer key, gpointer val, gpointer data)
     if (sat_cfg_get_bool(SAT_CFG_BOOL_SEND_OSC) == TRUE) {
     //OSC
     GString *msg_header, *tlecatnr_string;
-    msg_header = g_string_new("/sat/");
+    msg_header = g_string_new("/");
     tlecatnr_string = g_strdup_printf("%i", sat->tle.catnr);
     g_string_append(msg_header,  tlecatnr_string);        
 
