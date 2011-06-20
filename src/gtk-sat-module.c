@@ -73,6 +73,9 @@
 
 #include "sat-info.h"
 
+#include "stdlib.h"
+
+
 
 //#ifdef G_OS_WIN32
 //#  include "libc_internal.h"
@@ -1038,6 +1041,7 @@ gtk_sat_module_update_sat    (gpointer key, gpointer val, gpointer data)
     char msg_dest[20] = "/sat/";
     /* strcat(msg_dest, sat->tle.catnr); */
     strcat(msg_dest, itoa(5, sat->tle.catnr));
+
     if (sat_cfg_get_bool(SAT_CFG_BOOL_SEND_OSC) == TRUE) {
 	lo_address t = lo_address_new(NULL, "7770");
         if (lo_send(t, msg_dest, "ffff", sat->az, sat->el, sat->alt, sat->velo) == -1)
