@@ -58,8 +58,7 @@
 #endif
 #include <goocanvas.h>
 
-//for OSC
-#include "lo/lo.h"
+
 
 #define SKG_DEFAULT_WIDTH 600
 #define SKG_DEFAULT_HEIGHT 300
@@ -109,9 +108,6 @@ static void create_sat (gpointer key, gpointer value, gpointer data);
 
 static gdouble t2x (GtkSkyGlance *skg, gdouble t);
 static gdouble x2t (GtkSkyGlance *skg, gdouble x);
-
-int jul_to_time_t(gdouble j);
-
 static gchar *time_to_str (gdouble julutc);
 
 
@@ -989,10 +985,9 @@ create_sat (gpointer key, gpointer value, gpointer data)
     GtkSkyGlance       *skg = GTK_SKY_GLANCE(data);
     GSList             *passes = NULL;
     gdouble             maxdt;
-    guint               i,n,num;
+    guint               i,n;
     pass_t             *tmppass = NULL;
     sky_pass_t         *skypass;
-    pass_detail_t     *detail;
     guint               bcol,fcol;          /* colours */
     GooCanvasItemModel *root;
     GooCanvasItemModel *lab;
@@ -1029,13 +1024,6 @@ create_sat (gpointer key, gpointer value, gpointer data)
 
     /* add sky_pass_t items to skg->passes */
     if (passes != NULL) {
-
-        if (sat_cfg_get_bool(SAT_CFG_BOOL_SEND_OSC) == TRUE) {
-            lo_address t = lo_address_new(NULL, "7770");
-            if (lo_send(t, "/gpredict/pass/start", "i", 1) == -1)  
-                printf("OSC error %d: %s\n", lo_address_errno(t), lo_address_errstr(t));
-            lo_address_free (t);
-        }
 
         /* add pass items */
         for (i = 0; i < n; i++) {
@@ -1084,25 +1072,6 @@ create_sat (gpointer key, gpointer value, gpointer data)
                    can access it later during various events, e.g mouse click */
                 g_object_set_data (G_OBJECT (skypass->box), "pass", skypass->pass);
 
-
-                /* OSC Data sending out the passes*/
-                if (sat_cfg_get_bool(SAT_CFG_BOOL_SEND_OSC) == TRUE) {
-                    lo_address t = lo_address_new(NULL, "7770");
-    	            if (lo_send(t, "/gpredict/pass", "siiiiiii", skypass->pass->satname, jul_to_time_t(skypass->pass->aos), (int)skypass->pass->aos_az, 
-                    jul_to_time_t(skypass->pass->tca), (int)skypass->pass->maxel_az, (int)skypass->pass->max_el, jul_to_time_t(skypass->pass->los), (int)skypass->pass->los_az) == -1)
-		                printf("OSC error %d: %s\n", lo_address_errno(t), lo_address_errstr(t));
-                    num = g_slist_length (skypass->pass->details);
-                    /* sending the details of each pass */
-                    for (i = 0; i < num; i++) {
-                        detail = PASS_DETAIL(g_slist_nth_data (skypass->pass->details, i));
-                        if (lo_send(t, "/gpredict/pass/detail", "iii",jul_to_time_t(detail->time), (int)detail->az, (int)detail->el) == -1)
-                            printf("OSC error %d: %s\n", lo_address_errno(t), lo_address_errstr(t));
-                        //printf("detail: %d, time: %f\n", i, detail->time);
-                    }
-                    lo_address_free (t);
-                }
-
-
             }
             else {
                 sat_log_log (SAT_LOG_LEVEL_ERROR,
@@ -1110,13 +1079,6 @@ create_sat (gpointer key, gpointer value, gpointer data)
                                 __FILE__, __LINE__);
             }
 
-        }
-
-        if (sat_cfg_get_bool(SAT_CFG_BOOL_SEND_OSC) == TRUE) {  
-            lo_address t = lo_address_new(NULL, "7770");     
-            if (lo_send(t, "/gpredict/pass/done", "i", 1) == -1)  
-                printf("OSC error %d: %s\n", lo_address_errno(t), lo_address_errstr(t));
-            lo_address_free (t);
         }
 
         free_passes (passes);
@@ -1131,13 +1093,6 @@ create_sat (gpointer key, gpointer value, gpointer data)
     }
 }
 
-
-/* convert julian date to struct time_t */
-int jul_to_time_t(gdouble j) {
-    int t;
-    t = ((j - 2440587.5)*86400.);
-    return t;
-}
 
 
 /** \brief Convert "jul_utc" time to formatted string
