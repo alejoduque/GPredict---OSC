@@ -1039,7 +1039,6 @@ gtk_sat_module_update_sat    (gpointer key, gpointer val, gpointer data)
     /* OSC Data */
 
     char msg_dest[20] = "/sat/";
-    /* strcat(msg_dest, sat->tle.catnr); */
     strcat(msg_dest, itoa(5, sat->tle.catnr));
 
     if (sat_cfg_get_bool(SAT_CFG_BOOL_SEND_OSC) == TRUE) {
